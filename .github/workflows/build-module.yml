@@ -76,6 +76,8 @@ jobs:
     
           VERMAGIC_PATH=$(find build_dir/target-* -type f -name ".vermagic" | head -n1)
           VERMAGIC=$(cat "$VERMAGIC_PATH")
+          VERMAGIC_EXPECTED="${{ matrix.build_env.vermagic }}"
+
     
           if [ "$VERMAGIC" != "$VERMAGIC_EXPECTED" ]; then
             echo "Vermagic mismatch: $VERMAGIC, expected $VERMAGIC_EXPECTED"
