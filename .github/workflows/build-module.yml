@@ -22,7 +22,7 @@ jobs:
           #   target: ramips
           #   subtarget: mt7621
           #   vermagic: "9c242f353867f49a96054ff8c9f2c460"
-          - tag: "SNAPSHOT"
+          - tag: "master"
             pkgarch: aarch64_cortex-a53
             target: qualcomm_ipq60xx
             subtarget: generic
