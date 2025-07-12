@@ -1,6 +1,6 @@
 name: Create Release on Tag
-# on: [workflow_dispatch]
-on:
+on: [workflow_dispatch]
+# on:
   push:
     tags:
       - "v*.*.*"
@@ -24,15 +24,18 @@ jobs:
           #   vermagic: "9c242f353867f49a96054ff8c9f2c460"
           - tag: "master"
             pkgarch: aarch64_cortex-a53
-            target: qualcommax
-            subtarget: ipq60xx
+            target: qualcomm_ipq60xx
+            subtarget: generic
             vermagic: "c944d18b9480a9eec172628c13ab93dd"
+
+    env:
+      OPENWRT_REF: ${{ startsWith(matrix.build_env.tag, 'master') && 'refs/heads/master' || format('refs/tags/v{0}', matrix.build_env.tag) }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           repository: openwrt/openwrt
-          ref: ${{ matrix.build_env.tag == 'master' && 'refs/heads/master' || format('refs/tags/v{0}', matrix.build_env.tag) }}
+          ref: ${{ env.OPENWRT_REF }}
           fetch-depth: 0
     
       - name: Cache Tools and Kernel
@@ -71,8 +74,8 @@ jobs:
           make toolchain/install -i -j `nproc`
           make target/linux/compile -i -j `nproc` V=s
     
-          VERMAGIC=`cat ./build_dir/target-*/linux-*/linux-*/.vermagic || echo ""`
-          VERMAGIC_EXPECTED=${{ matrix.build_env.vermagic }}
+          VERMAGIC_PATH=$(find build_dir/target-* -type f -name ".vermagic" | head -n1)
+          VERMAGIC=$(cat "$VERMAGIC_PATH")
     
           if [ "$VERMAGIC" != "$VERMAGIC_EXPECTED" ]; then
             echo "Vermagic mismatch: $VERMAGIC, expected $VERMAGIC_EXPECTED"
