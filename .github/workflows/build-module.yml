@@ -32,62 +32,50 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: openwrt/openwrt
-          ref: ${{ matrix.build_env.tag }}
+          ref: ${{ matrix.build_env.tag == 'master' && 'refs/heads/master' || 'refs/tags/v' + matrix.build_env.tag }}
           fetch-depth: 0
-
+    
       - name: Cache Tools and Kernel
         id: cache-tools-kernel
         uses: actions/cache@v4
         env:
           cache-name: "cache-tools-kernel-${{ matrix.build_env.tag }}-${{ matrix.build_env.pkgarch}}-${{ matrix.build_env.target}}-${{ matrix.build_env.subtarget}}"
         with:
-          path: "**"
+          path: |
+            staging_dir/toolchain-*
+            build_dir/host
+            build_dir/toolchain-*
           key: ${{ runner.os }}-build-vm4-${{ env.cache-name }}
           restore-keys: |
             ${{ runner.os }}-build-vm4-cache-tools-kernel-${{ matrix.build_env.tag }}-${{ matrix.build_env.pkgarch}}-
-
+    
       - name: Building kernel and tools
-        #if: ${{ steps.cache-tools-kernel.outputs.cache-hit != 'true' }}
         run: |
           echo "pkgarch: ${{ matrix.build_env.pkgarch}}, target:${{ matrix.build_env.target}}, subtarget: ${{ matrix.build_env.subtarget}}"
-
-          # Setup & install feeds
-          # Клонируй OpenWrt и перейди на нужный коммит/ветку (например master или snapshot)
-          git clone https://github.com/openwrt/openwrt.git
-          cd openwrt
-          git checkout master  # или нужная версия/коммит
-          
-          # Обнови feeds из репо, а не из файлов
+    
+          git fetch origin
+          git checkout ${{ matrix.build_env.tag }}
+    
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          
-          # Создай конфиг вручную (либо используй дефолт и добавь нужные пакеты)
+    
           echo "CONFIG_PACKAGE_kmod-amneziawg=m" >> .config
           echo "CONFIG_PACKAGE_amneziawg-tools=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-amneziawg=y" >> .config
           make defconfig
-
-          echo "    > make tools/install"
+    
           make tools/install -i -j `nproc`
-
-          cat ./build_dir/target-*/linux-*/linux-*/.vermagic || true
-
-          echo "    > make toolchain/install"
-          make toolchain/install  -i -j `nproc`
-
-          cat ./build_dir/target-*/linux-*/linux-*/.vermagic || true
-
-          # compile kernel module
-          echo "    > make target/linux/compile"
-          make target/linux/compile  -i -j `nproc` V=s
-
-          VERMAGIC=`cat ./build_dir/target-*/linux-*/linux-*/.vermagic`
+          make toolchain/install -i -j `nproc`
+          make target/linux/compile -i -j `nproc` V=s
+    
+          VERMAGIC=`cat ./build_dir/target-*/linux-*/linux-*/.vermagic || echo ""`
           VERMAGIC_EXPECTED=${{ matrix.build_env.vermagic }}
-
+    
           if [ "$VERMAGIC" != "$VERMAGIC_EXPECTED" ]; then
-            echo Vermagic mismatch: $VERMAGIC, expected $VERMAGIC_EXPECTED
+            echo "Vermagic mismatch: $VERMAGIC, expected $VERMAGIC_EXPECTED"
             exit 1
           fi
+
 
       - name: Build AmneziaWG
         run: |
