@@ -22,7 +22,7 @@ jobs:
           #   target: ramips
           #   subtarget: mt7621
           #   vermagic: "9c242f353867f49a96054ff8c9f2c460"
-          - tag: "master"
+          - tag: "SNAPSHOT"
             pkgarch: aarch64_cortex-a53
             target: qualcomm_ipq60xx
             subtarget: generic
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: openwrt/openwrt
-          ref: v${{ matrix.build_env.tag }}
+          ref: ${{ matrix.build_env.tag }}
           fetch-depth: 0
 
       - name: Cache Tools and Kernel
