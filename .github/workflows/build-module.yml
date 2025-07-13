@@ -26,7 +26,7 @@ jobs:
             pkgarch: aarch64_cortex-a53
             target: qualcomm_ipq60xx
             subtarget: generic
-            vermagic: "c944d18b9480a9eec172628c13ab93dd"
+            vermagic: "30a6ea0879633039772f92a5748626a3"
 
     env:
       OPENWRT_REF: ${{ startsWith(matrix.build_env.tag, 'master') && 'refs/heads/master' || format('refs/tags/v{0}', matrix.build_env.tag) }}
