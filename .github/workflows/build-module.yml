@@ -15,7 +15,7 @@ jobs:
           - tag: "21.02.7"
             pkgarch: arm_cortex-a7
             target: ipq807x
-            subtarget: ipq60xx
+            subtarget: generic
             vermagic: "57d388dbd346719758aae2131362f842"
 
     steps:
@@ -47,13 +47,13 @@ jobs:
           ./scripts/feeds update && ./scripts/feeds install -a
 
           # Setup config with AWG and dependencies
-          wget https://downloads.openwrt.org/releases/${{ matrix.build_env.tag }}/targets/${{ matrix.build_env.target}}/${{ matrix.build_env.subtarget}}/config.buildinfo -O .config
-          echo "CONFIG_PACKAGE_kmod-amneziawg=m" >> .config
-          echo "CONFIG_PACKAGE_amneziawg-tools=y" >> .config
-          echo "CONFIG_PACKAGE_luci-app-amneziawg=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-crypto-lib-chacha20=m" >> .config
-          echo "CONFIG_PACKAGE_kmod-crypto-lib-chacha20poly1305=m" >> .config
-          echo "CONFIG_PACKAGE_kmod-crypto-chacha20poly1305=m" >> .config
+          cat > feeds.conf <<EOF
+          src-git packages https://git.openwrt.org/feed/packages.git^9e2b97c
+          src-git luci https://git.openwrt.org/project/luci.git^a8b1c78
+          src-git routing https://git.openwrt.org/feed/routing.git^b5e4e1e
+          src-git telephony https://git.openwrt.org/feed/telephony.git^f1a4d0d
+          src-git awgopenwrt https://github.com/yury-sannikov/awg-openwrt.git
+          EOF
 
           make defconfig
 
