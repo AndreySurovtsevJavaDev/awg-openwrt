@@ -12,11 +12,11 @@ jobs:
     strategy:
       matrix:
         build_env:
-          - tag: "23.05.2"
-            pkgarch: aarch64_cortex-a53
-            target: qualcommax
+          - tag: "21.02.7"
+            pkgarch: arm_cortex-a7
+            target: ipq807x
             subtarget: ipq60xx
-            vermagic: "30a6ea0879633039772f92a5748626a3"
+            vermagic: "57d388dbd346719758aae2131362f842"
 
     steps:
       - uses: actions/checkout@v4
